@@ -1,0 +1,33 @@
+{
+  "name": "upload-lambda",
+  "version": "1.0.0",
+  "description": "Lambda Function to generate pre-signed S3 URL for videos upload",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FIAP-8SOAT-G6/hackathon-upload-api.git"
+  },
+  "keywords": [
+    "lambda",
+    "nodejs",
+    "s3",
+    "presigned"
+  ],
+  "author": "vitorrafael",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FIAP-8SOAT-G6/hackathon-upload-api/issues"
+  },
+  "homepage": "https://github.com/FIAP-8SOAT-G6/hackathon-upload-api#readme",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.777.0",
+    "@aws-sdk/s3-request-presigner": "^3.777.0",
+    "typescript": "^5.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.14"
+  }
+}
