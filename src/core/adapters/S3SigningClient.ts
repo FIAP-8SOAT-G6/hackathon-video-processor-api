@@ -6,7 +6,7 @@ const AWS_DEFAULT_REGION = process.env.AWS_DEFAULT_REGION;
 const MAXIMUM_FILE_SIZE = 209715200; // 200 MB
 
 export class S3SigningClient implements SigningClient {
-  private s3Client: S3Client;
+  private readonly s3Client: S3Client;
 
   constructor(
     private readonly bucketName: string,
