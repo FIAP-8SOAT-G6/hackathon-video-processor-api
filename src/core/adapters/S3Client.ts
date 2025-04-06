@@ -1,10 +1,14 @@
-import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  HeadBucketCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
-import { SigningClient } from '../ports/CreatePreSignedURL';
+import { StorageClient } from '../ports/CreatePreSignedURL';
 
 const MAXIMUM_FILE_SIZE = 209715200; // 200 MB
 
-export class S3SigningClient implements SigningClient {
+export class S3StorageClient implements StorageClient {
   private readonly s3Client: S3Client;
 
   constructor(
@@ -19,25 +23,25 @@ export class S3SigningClient implements SigningClient {
     });
   }
 
-  async getSignedURL(
-    uuid: string,
+  async getVideoSignedURL(
+    resourceName: string,
     expirationTime: number
   ): Promise<{ url: string; fields: Record<string, string> }> {
     try {
-      this.logURLGeneration(uuid);
+      this.logURLGeneration(resourceName);
 
       await this.checkBucketExistance();
 
       const { url, fields } = await createPresignedPost(this.s3Client, {
         Bucket: this.bucketName,
-        Key: uuid,
+        Key: resourceName,
         Expires: expirationTime,
         Conditions: [
           ['content-length-range', 0, MAXIMUM_FILE_SIZE],
           ['starts-with', '$Content-Type', 'video/'],
         ],
         Fields: {
-          'Content-Type': 'video/*',
+          'Content-Type': 'video/mp4',
         },
       });
 
@@ -47,8 +51,29 @@ export class S3SigningClient implements SigningClient {
         error instanceof Error
           ? error.message || (error as any).code
           : 'Unknown error';
-      this.logURLGenerationFailed(uuid, errorMessage);
+      this.logURLGenerationFailed(resourceName, errorMessage);
       throw new Error(`Failed to generate pre-signed URL: ${errorMessage}`);
+    }
+  }
+
+  async createJSONResource(resourceName: string, resource: any): Promise<void> {
+    try {
+      await this.checkBucketExistance();
+
+      const params = {
+        Bucket: this.bucketName,
+        Key: resourceName,
+        Body: JSON.stringify(resource),
+        ContentType: 'application/json',
+      };
+
+      await this.s3Client.send(new PutObjectCommand(params));
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message || (error as any).code
+          : 'Unknown error';
+      throw new Error(`Failed to create resource: ${errorMessage}`);
     }
   }
 
@@ -61,7 +86,7 @@ export class S3SigningClient implements SigningClient {
   private logURLGeneration(uuid: string) {
     console.info(
       '[INFO] - Started Generating S3 Pre-Signed URL.\n' +
-        `\tUUID: ${uuid}.\n` +
+        `\tResource Name: ${uuid}.\n` +
         `\tBucket: ${this.bucketName}.\n` +
         `\tTimestamp: ${new Date().toISOString()}`
     );
@@ -70,7 +95,7 @@ export class S3SigningClient implements SigningClient {
   private logURLGenerationFailed(uuid: string, errorMessage: string) {
     console.error(
       '[ERROR] - Failed Generating S3 Pre-Signed URL.\n' +
-        `\tUUID: ${uuid}.\n` +
+        `\tResource Name: ${uuid}.\n` +
         `\tBucket: ${this.bucketName}.\n` +
         `\tError: ${errorMessage}.\n` +
         `\tTimestamp: ${new Date().toISOString()}`

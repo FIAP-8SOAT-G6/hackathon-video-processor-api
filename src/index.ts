@@ -1,5 +1,5 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
-import { S3SigningClient } from './core/adapters/S3SigningClient';
+import { S3StorageClient } from './core/adapters/S3Client';
 import createPresignedURLUseCase from './core/use-cases/CreatePresignedURLUseCase';
 
 export const handler: APIGatewayProxyHandler = async (event) => {
@@ -8,7 +8,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     const region = process.env.AWS_DEFAULT_REGION!;
     const endpoint = process.env.AWS_ENDPOINT!;
 
-    const s3SigningClient = new S3SigningClient(bucketName, region, endpoint);
+    const s3SigningClient = new S3StorageClient(bucketName, region, endpoint);
     const { uuid, uploadParams } = await createPresignedURLUseCase(
       s3SigningClient
     );
