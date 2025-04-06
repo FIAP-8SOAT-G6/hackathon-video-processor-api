@@ -43,7 +43,7 @@ jobs:
 
       - name: Run Integration Tests with Docker Compose
         run: |
-          docker-compose -f docker-compose.test.yaml up --build --abort-on-container-exit --exit-code-from api
+          docker compose -f docker-compose.test.yaml up --build --abort-on-container-exit --exit-code-from api
 
       - name: SonarQube Scan
         uses: SonarSource/sonarcloud-github-action@v5
