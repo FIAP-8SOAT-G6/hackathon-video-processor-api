@@ -3,9 +3,9 @@ import { v4 as uuid } from 'uuid';
 
 const DEFAULT_EXPIRATION_TIME = 60 * 10;
 
-export const createPresignedURLUseCase: CreatePreSignedURL = async (
+const createPresignedURLUseCase: CreatePreSignedURL = async function (
   signingClient
-) => {
+) {
   const UUID = uuid();
   const uploadParams = await signingClient.getSignedURL(
     UUID,
@@ -17,3 +17,5 @@ export const createPresignedURLUseCase: CreatePreSignedURL = async (
     uploadParams: uploadParams,
   };
 };
+
+export default createPresignedURLUseCase;

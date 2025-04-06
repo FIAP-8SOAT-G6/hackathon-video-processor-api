@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
-import { createPresignedURLUseCase } from '../../core/use-cases/CreatePresignedURLUseCase';
+import createPresignedURLUseCase from '../../core/use-cases/CreatePresignedURLUseCase';
 import { S3SigningClient } from '../../core/adapters/S3SigningClient';
 
 chai.use(chaiAsPromised);
