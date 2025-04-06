@@ -2,7 +2,6 @@ import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import { SigningClient } from '../ports/CreatePreSignedURL';
 
-const AWS_DEFAULT_REGION = process.env.AWS_DEFAULT_REGION;
 const MAXIMUM_FILE_SIZE = 209715200; // 200 MB
 
 export class S3SigningClient implements SigningClient {
@@ -11,7 +10,7 @@ export class S3SigningClient implements SigningClient {
   constructor(
     private readonly bucketName: string,
     private readonly region: string,
-    private readonly endpoint: string | undefined = undefined
+    private readonly endpoint: string
   ) {
     this.s3Client = new S3Client({
       region: this.region,
