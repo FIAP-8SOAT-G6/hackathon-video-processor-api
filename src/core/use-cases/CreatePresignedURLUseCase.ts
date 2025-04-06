@@ -13,7 +13,7 @@ export const createPresignedURLUseCase: CreatePreSignedURL = async (
   );
 
   return Promise.resolve({
-    uuid: uuid(),
+    uuid: UUID,
     uploadParams: uploadParams,
   });
 };
