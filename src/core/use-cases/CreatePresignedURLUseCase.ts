@@ -1,5 +1,5 @@
-import { CreatePreSignedURL } from "../ports/CreatePreSignedURL";
-import { v4 as uuid } from "uuid";
+import { CreatePreSignedURL } from '../ports/CreatePreSignedURL';
+import { v4 as uuid } from 'uuid';
 
 const DEFAULT_EXPIRATION_TIME = 60 * 10;
 
@@ -12,8 +12,8 @@ export const createPresignedURLUseCase: CreatePreSignedURL = async (
     DEFAULT_EXPIRATION_TIME
   );
 
-  return Promise.resolve({
+  return {
     uuid: UUID,
     uploadParams: uploadParams,
-  });
+  };
 };

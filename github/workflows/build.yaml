@@ -12,6 +12,7 @@ on:
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
 
     strategy:
@@ -35,3 +36,27 @@ jobs:
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  test:
+    name: Integration Tests
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run Integration Tests with Docker Compose
+        run: |
+          docker-compose -f docker-compose.test.yaml up --build --abort-on-container-exit --exit-code-from api
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarcloud-github-action@v4
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Fail if coverage folder is missing
+        if: success() && !exists('coverage')
+        run: exit 1

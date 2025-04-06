@@ -1,0 +1,35 @@
+services:
+  localstack:
+    build:
+      context: ./localstack
+      dockerfile: localstack.Dockerfile
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      - localstack_data:/var/lib/localstack
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: api-test-runner
+    depends_on:
+      - localstack
+    environment:
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: dummy
+      AWS_SECRET_ACCESS_KEY: dummy
+      AWS_ENDPOINT: http://localstack:4566
+      BUCKET_NAME: hackathon-fiap
+    volumes:
+      - ./coverage:/app/coverage
+    command: sh -c "./scripts/wait-for-localstack.sh && npm run coverage"
+
+
+volumes:
+  localstack_data:
