@@ -1,8 +1,6 @@
 services:
   localstack:
-    build:
-      context: ./localstack
-      dockerfile: localstack.Dockerfile
+    image: localstack/localstack:s3-latest
     container_name: localstack
     ports:
       - "4566:4566"
@@ -12,6 +10,7 @@ services:
       - AWS_DEFAULT_REGION=us-east-1
     volumes:
       - localstack_data:/var/lib/localstack
+      - ./scripts/init-s3.sh:/etc/localstack/init.d/ready.d/init-s3.sh
 
   api:
     build:
