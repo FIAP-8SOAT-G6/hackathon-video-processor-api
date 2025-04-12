@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION_DEFAULT: us-east-1
-  AWS_ECR_REPOSITORY: hackathon-upload-api
+  AWS_ECR_REPOSITORY: video-processor-hackathon/api
   AWS_LAMBDA_FUNCTION_NAME: GetPresignedUrl
   IMAGE_TAG: ${{ github.sha }}
 
