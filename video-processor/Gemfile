@@ -1,0 +1,11 @@
+source 'https://rubygems.org'
+
+gem 'aws-sdk-s3'
+gem 'rubyzip'
+gem 'dotenv'
+gem 'logger'
+
+gem 'aws-sdk-s3'
+gem 'aws-sdk-ecs'
+gem 'aws-sdk-cloudwatchlogs'
+gem 'aws-sdk-core'

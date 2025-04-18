@@ -1,0 +1,65 @@
+{
+  "family": "video-processor",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::881390080051:role/LabRole",
+  "containerDefinitions": [
+    {
+      "name": "video-processor",
+      "image": "881390080051.dkr.ecr.us-east-1.amazonaws.com/video-processor:latest",
+      "essential": true,
+      "environment": [
+        { "name": "AWS_REGION", "value": "us-east-1" },
+        { "name": "BUCKET_NAME", "value": "g6-processor" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/video-processor",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
+
+
+// {
+//   "AWSTemplateFormatVersion": "2010-09-09",
+//   "Description": "CloudFormation template for EventBridge Rulevideo-upload-rule",
+//   "Resources": {
+//     "Rulef84f20fb": {
+//       "Type": "AWS::Events::Rule",
+//       "Properties": {
+//         "Name": "video-upload-rule",
+//         "EventPattern": "{\"source\":[\"aws.s3\"],\"detail-type\":[\"AWS API Call via CloudTrail\"],\"detail\":{\"eventSource\":[\"s3.amazonaws.com\"],\"eventName\":[\"PutObject\",\"CompleteMultipartUpload\"],\"requestParameters\":{\"bucketName\":[\"g6-processor\"]},\"responseElements\":{\"x-amz-request-id\":[\"*\"]},\"s3\":{\"object\":{\"key\":[{\"prefix\":\"uploads/\"}]}}}}",
+//         "State": "ENABLED",
+//         "EventBusName": "default",
+//         "Targets": [{
+//           "Id": "Idc7ceb5f0-d6b5-4885-88ec-f441a096e5ee",
+//           "Arn": {
+//             "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:cluster/my-cluster"
+//           },
+//           "RoleArn": {
+//             "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
+//           },
+//           "EcsParameters": {
+//             "TaskDefinitionArn": "arn:aws:ecs:us-east-1:881390080051:task-definition/video-processor",
+//             "TaskCount": 1,
+//             "NetworkConfiguration": {
+//               "awsvpcConfiguration": {
+//                 "Subnets": ["subnet-084654079eabb1856"]
+//               }
+//             },
+//             "EnableECSManagedTags": false,
+//             "EnableExecuteCommand": false
+//           }
+//         }]
+//       }
+//     }
+//   },
+//   "Parameters": {}
+// }
