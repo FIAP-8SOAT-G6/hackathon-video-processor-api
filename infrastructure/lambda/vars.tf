@@ -1,17 +1,17 @@
-variable "presignedurl-repositoryName" {
+variable "pre_signed_url-repositoryName" {
   default = "video-processor-hackathon/upload-api"
 }
 
-variable "presignedurl-lambda_name" {
-  default = "GetPreSignedUrl"
+variable "pre_signed_url-lambda_name" {
+  default = "Getpre_signed_url"
 }
 
-variable "listprocessingstatus-repositoryName" {
+variable "list_processing_status-repositoryName" {
   default = "video-processor-hackathon/upload-api"
 }
 
-variable "listprocessingstatus-lambda_name" {
-  default = "ListProcessingStatus"
+variable "list_processing_status-lambda_name" {
+  default = "list_processing_status"
 }
 
 
