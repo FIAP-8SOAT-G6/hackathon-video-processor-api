@@ -108,13 +108,7 @@ export class S3StorageClient implements StorageClient {
 
     const response = await this.s3Client.send(command);
     const stream = response.Body as ReadableStream | undefined;
-
-    if (!stream) {
-      throw new Error('Failed to retrieve video status content');
-    }
-
-    const content = await this.streamToString(stream);
-    return content;
+    return this.streamToString(stream);
   }
   private async checkBucketExistance() {
     await this.s3Client.send(
