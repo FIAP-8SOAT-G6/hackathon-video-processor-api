@@ -49,10 +49,7 @@ export class S3StorageClient implements StorageClient {
 
       return { url, fields };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message || (error as any).code
-          : 'Unknown error';
+      const errorMessage = (error as Error).message;
       this.logURLGenerationFailed(resourceName, errorMessage);
       throw new Error(`Failed to generate pre-signed URL: ${errorMessage}`);
     }
@@ -71,10 +68,7 @@ export class S3StorageClient implements StorageClient {
 
       await this.s3Client.send(new PutObjectCommand(params));
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message || (error as any).code
-          : 'Unknown error';
+      const errorMessage = (error as Error).message;
       throw new Error(`Failed to create resource: ${errorMessage}`);
     }
   }
@@ -92,10 +86,7 @@ export class S3StorageClient implements StorageClient {
         .map((object) => object.Key!)
         .filter((key) => key?.endsWith('/status.json'));
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message || (error as any).code
-          : 'Unknown error';
+      const errorMessage = (error as Error).message;
       throw new Error(`Failed to get video statuses: ${errorMessage}`);
     }
   }
@@ -110,6 +101,7 @@ export class S3StorageClient implements StorageClient {
     const stream = response.Body as ReadableStream | undefined;
     return this.streamToString(stream);
   }
+
   private async checkBucketExistance() {
     await this.s3Client.send(
       new HeadBucketCommand({ Bucket: this.bucketName })
