@@ -1,10 +1,19 @@
-variable "repositoryName" {
-  default = "video-processor-hackathon/api"
+variable "presignedurl-repositoryName" {
+  default = "video-processor-hackathon/upload-api"
 }
 
-variable "lambda_name" {
+variable "presignedurl-lambda_name" {
   default = "GetPreSignedUrl"
 }
+
+variable "listprocessingstatus-repositoryName" {
+  default = "video-processor-hackathon/upload-api"
+}
+
+variable "listprocessingstatus-lambda_name" {
+  default = "ListProcessingStatus"
+}
+
 
 variable "image_tag" {
   description = "Docker image tag"

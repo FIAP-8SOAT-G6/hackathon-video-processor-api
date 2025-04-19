@@ -4,6 +4,7 @@ import chaiAsPromised from 'chai-as-promised';
 import createPresignedURLUseCase from '../../core/use-cases/CreatePresignedURLUseCase';
 import { S3StorageClient } from '../../core/adapters/S3Client';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { clearS3Bucket } from '../utils/ClearS3';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -13,6 +14,10 @@ const AWS_DEFAULT_REGION = process.env.AWS_DEFAULT_REGION!;
 const AWS_ENDPOINT = process.env.AWS_ENDPOINT!;
 
 describe('CreatePresignedURLUseCase', () => {
+  beforeEach(async () => {
+    await clearS3Bucket();
+  });
+
   it('should return uuid and url', async () => {
     const useCaseResponse = await createPresignedURLUseCase(
       new S3StorageClient(BUCKET_NAME, AWS_DEFAULT_REGION, AWS_ENDPOINT)
