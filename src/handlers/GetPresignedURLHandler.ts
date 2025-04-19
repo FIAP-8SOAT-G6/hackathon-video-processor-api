@@ -1,6 +1,6 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
-import { S3StorageClient } from './core/adapters/S3Client';
-import createPresignedURLUseCase from './core/use-cases/CreatePresignedURLUseCase';
+import { S3StorageClient } from '../core/adapters/S3Client';
+import createPresignedURLUseCase from '../core/use-cases/CreatePresignedURLUseCase';
 
 export const handler: APIGatewayProxyHandler = async (event) => {
   try {

@@ -18,4 +18,4 @@ WORKDIR ${LAMBDA_TASK_ROOT}
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 
-CMD ["dist/index.handler"]
+CMD ["dist/handlers/ListProcessingStatusHandler.handler"]
