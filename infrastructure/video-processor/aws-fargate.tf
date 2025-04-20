@@ -1,5 +1,5 @@
 data "aws_s3_bucket" "video-processor" {
-  bucket = "soat8-g6-hackathon-video-processor-vitor"
+  bucket = "soat8-g6-hackathon-video-processor-gabriel"
 }
 
 data "aws_iam_role" "lab-role" {
