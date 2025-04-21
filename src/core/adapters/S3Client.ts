@@ -1,10 +1,12 @@
 import {
+  GetObjectCommand,
   HeadBucketCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
-import { StorageClient } from '../ports/CreatePreSignedURL';
+import { StorageClient } from '../ports/StorageClient';
 
 const MAXIMUM_FILE_SIZE = 209715200; // 200 MB
 
@@ -47,10 +49,7 @@ export class S3StorageClient implements StorageClient {
 
       return { url, fields };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message || (error as any).code
-          : 'Unknown error';
+      const errorMessage = (error as Error).message;
       this.logURLGenerationFailed(resourceName, errorMessage);
       throw new Error(`Failed to generate pre-signed URL: ${errorMessage}`);
     }
@@ -69,12 +68,38 @@ export class S3StorageClient implements StorageClient {
 
       await this.s3Client.send(new PutObjectCommand(params));
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message || (error as any).code
-          : 'Unknown error';
+      const errorMessage = (error as Error).message;
       throw new Error(`Failed to create resource: ${errorMessage}`);
     }
+  }
+
+  async getVideoStatuses(): Promise<string[]> {
+    try {
+      await this.checkBucketExistance();
+
+      const command = new ListObjectsV2Command({
+        Bucket: this.bucketName,
+      });
+
+      const result = await this.s3Client.send(command);
+      return (result.Contents || [])
+        .map((object) => object.Key!)
+        .filter((key) => key?.endsWith('/status.json'));
+    } catch (error) {
+      const errorMessage = (error as Error).message;
+      throw new Error(`Failed to get video statuses: ${errorMessage}`);
+    }
+  }
+
+  async retrieveVideoStatusContent(key: string): Promise<string> {
+    const command = new GetObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+    });
+
+    const response = await this.s3Client.send(command);
+    const stream = response.Body as ReadableStream | undefined;
+    return this.streamToString(stream);
   }
 
   private async checkBucketExistance() {
@@ -100,5 +125,14 @@ export class S3StorageClient implements StorageClient {
         `\tError: ${errorMessage}.\n` +
         `\tTimestamp: ${new Date().toISOString()}`
     );
+  }
+
+  private streamToString(stream: any): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const chunks: any[] = [];
+      stream.on('data', (chunk: string) => chunks.push(chunk));
+      stream.on('error', reject);
+      stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+    });
   }
 }
