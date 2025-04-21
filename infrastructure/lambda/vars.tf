@@ -14,5 +14,5 @@ variable "image_tag" {
 variable "bucket_name" {
   description = "S3 bucket name"
   type        = string
-  default     = "soat8-g6-hackathon-video-processor-gabriel"
+  default     = "soat8-g6-hackathon-video-processor-vitor"
 }
