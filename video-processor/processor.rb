@@ -2,7 +2,7 @@ require 'dotenv/load'
 require 'aws-sdk-s3'
 require 'fileutils'
 require 'json'
-require 'zip' # rubyzip
+require 'zip'
 
 REGION = ENV.fetch("AWS_REGION", "us-east-1")
 BUCKET = ENV.fetch("INPUT_BUCKET")
@@ -31,33 +31,52 @@ def process_video(s3_key)
   video_path = "/tmp/vid/video.mp4"
 
   # Baixa o vídeo do S3
+  update_video_status(s3, s3_key, "downloading")
   s3.get_object(bucket: BUCKET, key: s3_key, response_target: video_path)
 
   # Extrai frames do vídeo
   output_pattern = "/tmp/vid/frame_%03d.jpg"
+  update_video_status(s3, s3_key, "extracting_frames")
   extract_frames(video_path, output_pattern)
 
   # Zipa os frames
   frame_paths = Dir["/tmp/vid/frame_*.jpg"]
-  raise "No frames extracted" if frame_paths.empty?
 
+  if frame_paths.empty?
+    update_video_status(s3, s3_key, "failed - no_frames")
+    raise "No frames extracted"
+  end
+
+  update_video_status(s3, s3_key, "zipping_frames")
   zip_path = "/tmp/vid/frames.zip"
   zip_frames(frame_paths, zip_path)
 
-  # Faz upload do ZIP para o S3
-  zip_s3_key = "frames/frames.zip"
-  puts "Uploading ZIP to S3: #{zip_s3_key}"
+  zip_s3_key = "frames/#{s3_key}-frames.zip"
+
+  update_video_status(s3, s3_key, "uploading_zip")
+
+  # Faz o upload do zip para o S3
   s3.put_object(bucket: BUCKET, key: zip_s3_key, body: File.read(zip_path))
+
+  update_video_status(s3, s3_key, "completed")
+
+  true
 end
 
-if event = ENV['EVENT_JSON']
-  parsed = JSON.parse(event)
-elsif File.exist?('event.json')
-  parsed = JSON.parse(File.read('event.json'))
+def update_video_status(s3, s3_key, status)
+  puts "Atualizando status do vídeo: #{s3_key} - Status: #{status}"
+  s3.put_object(
+    bucket: BUCKET,
+    key: "#{s3_key}-status.json",
+    body: JSON.generate({ video: s3_key, status: status }),
+    content_type: 'application/json'
+  )
+end
+
+if s3_video_key = ENV['S3_VIDEO_KEY']
+  puts "🔄 Processando vídeo: #{s3_video_key}"
+  process_video(s3_video_key)
 else
   puts "⚠️ Nenhum evento encontrado"
   exit
 end
-
-s3_key = parsed["detail"]["object"]["key"]
-process_video(s3_key)
