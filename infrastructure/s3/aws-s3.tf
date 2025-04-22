@@ -7,4 +7,3 @@ resource "aws_s3_bucket_notification" "notify_eventbridge" {
 
   eventbridge = true
 }
-
