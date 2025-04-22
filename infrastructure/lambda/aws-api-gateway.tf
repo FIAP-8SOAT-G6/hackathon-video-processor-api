@@ -16,10 +16,11 @@ resource "aws_api_gateway_resource" "videos_resource" {
 }
 
 resource "aws_api_gateway_method" "post_method" {
-  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
-  resource_id   = aws_api_gateway_resource.upload_resource.id
-  http_method   = "POST"
-  authorization = "NONE" ## @TODO: Implement authorization handling
+  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  resource_id = aws_api_gateway_resource.upload_resource.id
+  http_method = "POST"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.cognito_authorizer.id
 }
 
 resource "aws_api_gateway_method" "get_method" {
@@ -30,7 +31,13 @@ resource "aws_api_gateway_method" "get_method" {
 }
 
 resource "aws_api_gateway_deployment" "deployment" {
-  depends_on  = [aws_api_gateway_integration.upload_lambda_integration, aws_api_gateway_integration.list_processing_status_lambda_integration]
+  # depends_on = [aws_api_gateway_integration.upload_lambda_integration]
+
+  depends_on = [
+    aws_api_gateway_integration.upload_lambda_integration,
+    aws_api_gateway_method.post_method
+  ]
+
   rest_api_id = aws_api_gateway_rest_api.api_gateway.id
 }
 
@@ -38,4 +45,12 @@ resource "aws_api_gateway_stage" "prod_stage" {
   deployment_id = aws_api_gateway_deployment.deployment.id
   rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
   stage_name    = "prod"
+}
+
+resource "aws_api_gateway_authorizer" "cognito_authorizer" {
+  name = "cognito-authorizer"
+  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  type = "COGNITO_USER_POOLS"
+  provider_arns = [aws_cognito_user_pool.user_pool.arn]
+  identity_source = "method.request.header.Authorization"
 }
