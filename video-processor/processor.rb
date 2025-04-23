@@ -1,5 +1,6 @@
 require 'dotenv/load'
 require 'aws-sdk-s3'
+require 'aws-sdk-sns'
 require 'fileutils'
 require 'json'
 require 'zip'
@@ -27,6 +28,7 @@ end
 def process_video(s3_key)
   s3 = Aws::S3::Client.new(region: REGION)
 
+  notify_status(s3_key, "iniciado")
   FileUtils.mkdir_p("/tmp/vid")
   video_path = "/tmp/vid/video.mp4"
 
@@ -51,13 +53,15 @@ def process_video(s3_key)
   zip_path = "/tmp/vid/frames.zip"
   zip_frames(frame_paths, zip_path)
 
-  zip_s3_key = "frames/#{s3_key}-frames.zip"
+  uuid = s3_key.split('/').first
+  zip_s3_key = "#{uuid}/frames.zip"
 
   update_video_status(s3, s3_key, "uploading_zip")
 
   # Faz o upload do zip para o S3
   s3.put_object(bucket: BUCKET, key: zip_s3_key, body: File.read(zip_path))
 
+  notify_status(s3_key, "finalizado")
   update_video_status(s3, s3_key, "completed")
 
   true
@@ -65,12 +69,36 @@ end
 
 def update_video_status(s3, s3_key, status)
   puts "Atualizando status do vídeo: #{s3_key} - Status: #{status}"
+  uuid, video = s3_key.split('/')
   s3.put_object(
     bucket: BUCKET,
-    key: "#{s3_key}-status.json",
-    body: JSON.generate({ video: s3_key, status: status }),
+    key: "#{uuid}/status.json",
+    body: JSON.generate({ id: uuid, video: video, status: status.upcase }),
     content_type: 'application/json'
   )
+end
+
+def notify_status(s3_key, status)
+  return unless topic_sns
+
+  puts "Notificando status do vídeo: #{s3_key} - Status: #{status}"
+
+  message = "Processamento do vídeo #{s3_key} - #{status}"
+  sns.publish(topic_arn: topic_sns, message: message)
+end
+
+def topic_sns
+  @topic_sns ||= begin
+    topic_arn = sns.list_topics.topics.find { |t| t.topic_arn.include?(BUCKET) }&.topic_arn
+
+    topic_arn = sns.create_topic(name: BUCKET).topic_arn unless topic_arn
+
+    topic_arn
+  end
+end
+
+def sns
+  @sns ||= Aws::SNS::Client.new(region: REGION)
 end
 
 if s3_video_key = ENV['S3_VIDEO_KEY']
