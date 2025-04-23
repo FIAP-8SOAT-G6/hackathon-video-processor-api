@@ -37,6 +37,10 @@ resource "aws_ecs_task_definition" "video-processor" {
         {
           name  = "BUCKET_NAME",
           value = data.aws_s3_bucket.video-processor.id
+        },
+        {
+           name  = "FORCE_DEPLOY"
+           value = timestamp() # força nova definição a cada apply
         }
       ]
 
@@ -52,6 +56,7 @@ resource "aws_ecs_task_definition" "video-processor" {
   ])
 }
 
+
 resource "aws_cloudwatch_event_target" "run_fargate" {
   rule     = aws_cloudwatch_event_rule.s3_mp4_upload.name
   role_arn = data.aws_iam_role.lab-role.arn
@@ -60,10 +65,33 @@ resource "aws_cloudwatch_event_target" "run_fargate" {
   ecs_target {
     task_definition_arn = aws_ecs_task_definition.video-processor.arn
     launch_type         = "FARGATE"
+
     network_configuration {
       subnets          = [aws_subnet.video-processor-subnet-1a.id, aws_subnet.video-processor-subnet-1b.id]
       security_groups  = [aws_security_group.video_sg.id]
       assign_public_ip = true
     }
+  }
+
+  input_transformer {
+    input_paths = {
+      objectkey = "$.detail.object.key"
+    }
+
+    input_template = <<EOF
+      {
+        "containerOverrides": [
+          {
+            "name": "video-processor",
+            "environment": [
+              {
+                "name": "S3_VIDEO_KEY",
+                "value": "<objectkey>"
+              }
+            ]
+          }
+        ]
+      }
+EOF
   }
 }

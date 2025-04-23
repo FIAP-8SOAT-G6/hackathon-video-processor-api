@@ -1,0 +1,10 @@
+{
+  "detail": {
+    "bucket": {
+      "name": "g6-processor"
+    },
+    "object": {
+      "key": "uploads/video-sample.mp4"
+    }
+  }
+}
