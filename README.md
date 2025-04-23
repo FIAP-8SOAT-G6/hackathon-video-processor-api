@@ -11,7 +11,12 @@ Cria um authorizer que é utilizado pelo API Gateway.
 ##### Amazon API Gateway
 Recebe requisições na rota POST {{host}}/prod/upload e atua como ponto de entrada da aplicação;
 Aplica a autenticação criada pelo Cognito para que somente usuários autenticados possam executar as requisições;
-GET{{host}}/prod/upload
+
+Rotas disponibilizadas pela aplicação: 
+```
+POST {{host}}/prod/upload
+GET {{host}}/prod/videos
+```
 
 ##### Lambdas
 1. Lambda  `pre_signed_url-lambda`, responsável por gerar a URL pré-assinada para upload de vídeo, utilizando um UUID como identificador. Essa function usa conceitos de clean architecture, com adapters, ports e use cases.
