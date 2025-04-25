@@ -69,6 +69,7 @@ jobs:
         working-directory: infrastructure/lambda
         env:
           TF_VAR_image_tag: ${{ env.IMAGE_TAG }}
+          TF_VAR_sendgrid_api_key: ${{ secrets.SENDGRID_API_KEY }}
         run: |
           terraform init
           terraform apply -auto-approve
